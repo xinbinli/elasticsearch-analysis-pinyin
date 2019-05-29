@@ -1,6 +1,8 @@
 package org.elasticsearch.analysis;
 
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.env.Environment;
+import org.elasticsearch.index.dic.MonitorTask;
 
 /**
  * Created by medcl on 15/11/26.
@@ -25,7 +27,9 @@ public class PinyinConfig {
     //  after 6.0, offset is strictly constrained, overlapped tokens are not allowed, with this parameter, overlapped token will allowed by ignore offset, please note, all position related query or highlight will become incorrect, you should use multi fields and specify different settings for different query purpose. if you need offset, please set it to false. default: true.
     public boolean ignorePinyinOffset =true;
 
-    public PinyinConfig() {}
+    public PinyinConfig() {
+        MonitorTask.initial();
+    }
     public PinyinConfig(Settings settings) {
         this.keepFirstLetter=settings.getAsBoolean("keep_first_letter",true);
         this.keepSeparateFirstLetter=settings.getAsBoolean("keep_separate_first_letter",false);
@@ -44,4 +48,5 @@ public class PinyinConfig {
         this.fixedPinyinOffset =settings.getAsBoolean("fixed_pinyin_offset", false);
         this.ignorePinyinOffset =settings.getAsBoolean("ignore_pinyin_offset", true);
     }
+
 }
