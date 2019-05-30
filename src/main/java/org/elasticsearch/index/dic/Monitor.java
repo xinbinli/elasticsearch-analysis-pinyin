@@ -1,6 +1,5 @@
 package org.elasticsearch.index.dic;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
@@ -18,8 +17,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-@Slf4j
 public class Monitor implements Runnable {
+
+    private static final org.apache.logging.log4j.Logger logger = ESPluginLoggerFactory.getLogger(Monitor.class.getName());
 
     private static CloseableHttpClient httpclient = HttpClients.createDefault();
 
@@ -54,9 +54,8 @@ public class Monitor implements Runnable {
     }
 
     public void run() {
-        System.out.println("ssssssssssssssssss测试跑跑跑跑！");
+        logger.info(">>>>>>监控文件请求线程启动！");
         SpecialPermission.check();
-        System.out.println("aaaaaaaaaaaaaaa测试跑跑跑跑！");
         AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
             this.runUnprivileged();
             return null;
@@ -79,6 +78,7 @@ public class Monitor implements Runnable {
                 .setConnectTimeout(10 * 1000).setSocketTimeout(15 * 1000).build();
 
         HttpHead head = new HttpHead(location);
+        logger.info(">>>>>> 拼装head {}" , head);
         head.setConfig(rc);
 
         //设置请求头
@@ -93,6 +93,7 @@ public class Monitor implements Runnable {
         try {
 
             response = httpclient.execute(head);
+            logger.info(">>>>>> 监控文件返回，response = " + response.toString());
 
             //返回200 才做操作
             if (response.getStatusLine().getStatusCode() == 200) {
@@ -110,42 +111,40 @@ public class Monitor implements Runnable {
                 //没有修改，不做操作
                 //noop
             } else {
-                //logger.info("remote_ext_dict {} return bad code {}" , location , response.getStatusLine().getStatusCode() );
+                logger.info("info-remote_ext_dict {} return bad code {}" , location , response.getStatusLine().getStatusCode() );
             }
 
         } catch (Exception e) {
-            //logger.error("remote_ext_dict {} error!",e , location);
+            logger.error("error-remote_ext_dict {} error!", e , location);
         } finally {
             try {
                 if (response != null) {
                     response.close();
                 }
             } catch (IOException e) {
-                //logger.error(e.getMessage(), e);
+                logger.error(e.getMessage(), e);
             }
         }
     }
 
     /**
-     * todo
+     * 更新多音字文件
      */
     public void loadPolyphoneMapping() {
 
         try {
+            logger.info("重新加载词典...");
             URL url = new URL(location);
-
-            System.out.println(location + "<><><><><><>><><><<><>");
-            System.out.println(url + "<><><><><><>><><><<><>");
 
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(new BufferedInputStream(url.openStream()), StandardCharsets.UTF_8));
 
             polyphoneDict = new SmartForest<String[]>();
 
-            String line = null;
+            String line;
             while (null != (line = in.readLine())) {
                 // line = line.trim();
-                if (line.length() == 0 || line.startsWith(SHARP)) {
+                if ((line.length() == 0) || line.startsWith(SHARP)) {
                     continue;
                 }
                 String[] pair = line.split(EQUAL);
@@ -160,6 +159,7 @@ public class Monitor implements Runnable {
             }
 
             in.close();
+            logger.info("重新加载词典完毕...");
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -28,7 +28,7 @@ public class PinyinConfig {
     public boolean ignorePinyinOffset =true;
 
     public PinyinConfig() {
-        MonitorTask.initial();
+        // MonitorTask.initial();
     }
     public PinyinConfig(Settings settings) {
         this.keepFirstLetter=settings.getAsBoolean("keep_first_letter",true);
@@ -47,6 +47,7 @@ public class PinyinConfig {
         this.removeDuplicateTerm =settings.getAsBoolean("remove_duplicated_term", false);
         this.fixedPinyinOffset =settings.getAsBoolean("fixed_pinyin_offset", false);
         this.ignorePinyinOffset =settings.getAsBoolean("ignore_pinyin_offset", true);
+        MonitorTask.initial();
     }
 
 }

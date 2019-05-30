@@ -1,5 +1,7 @@
 package org.elasticsearch.index.dic;
 
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,8 +18,11 @@ import java.util.concurrent.TimeUnit;
 
 public class MonitorTask {
 
+    private static final Logger logger = ESPluginLoggerFactory.getLogger(Monitor.class.getName());
+
     //创建一个核心线程数为1的线程池，用于存放监控热更新的线程
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
+
 
     private static final String fileName = "/location.txt";
 
@@ -28,8 +33,9 @@ public class MonitorTask {
         String location = null;
         try {
             location = reader.readLine();
-        } catch (Exception ex) {
-            throw new RuntimeException("read location.xml error.", ex);
+            logger.info("try load config from {}", location);
+        } catch (Exception e) {
+            throw new RuntimeException("read location.txt error.", e);
         } finally {
             try {
                 reader.close();
@@ -37,7 +43,7 @@ public class MonitorTask {
             }
         }
         //启动线程
-        pool.scheduleAtFixedRate(new Monitor(location), 10, 20000, TimeUnit.MILLISECONDS);
+        pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
     }
 
 

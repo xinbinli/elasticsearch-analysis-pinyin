@@ -3,6 +3,7 @@ package org.elasticsearch.index.analysis;
 import org.apache.lucene.analysis.Analyzer;
 import org.elasticsearch.analysis.PinyinConfig;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.index.dic.MonitorTask;
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,11 +17,12 @@ public final class PinyinAnalyzer extends Analyzer {
 
     public PinyinAnalyzer(PinyinConfig config) {
         this.config=config;
+        // MonitorTask.initial();
     }
 
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {
-            return new TokenStreamComponents(new PinyinTokenizer(config));
+        return new TokenStreamComponents(new PinyinTokenizer(config));
     }
 
 }
