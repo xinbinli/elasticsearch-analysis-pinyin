@@ -5,6 +5,7 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.elasticsearch.analysis.PinyinConfig;
+import org.elasticsearch.index.dic.MonitorTask;
 import org.nlpcn.commons.lang.pinyin.Pinyin;
 
 import java.io.IOException;
@@ -43,6 +44,9 @@ public class PinyinTokenizer extends Tokenizer {
     public PinyinTokenizer(PinyinConfig config) {
         this(DEFAULT_BUFFER_SIZE);
         this.config = config;
+
+        //启动有效，每次启动只会启动一次线程
+        MonitorTask.initial();
 
         //validate config
         if (!(config.keepFirstLetter || config.keepSeparateFirstLetter || config.keepFullPinyin || config.keepJoinedFullPinyin)) {

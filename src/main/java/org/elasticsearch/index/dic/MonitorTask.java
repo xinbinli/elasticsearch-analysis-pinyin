@@ -23,7 +23,6 @@ public class MonitorTask {
     //创建一个核心线程数为1的线程池，用于存放监控热更新的线程
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 
-
     private static final String fileName = "/location.txt";
 
     public static synchronized void initial() {
@@ -43,7 +42,7 @@ public class MonitorTask {
             }
         }
         //启动线程
-        pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
+        pool.scheduleAtFixedRate(new Monitor(location), 10, 30000, TimeUnit.MILLISECONDS);
     }
 
 

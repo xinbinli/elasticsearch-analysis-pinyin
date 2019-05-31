@@ -6,6 +6,7 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.elasticsearch.SpecialPermission;
+import org.nlpcn.commons.lang.pinyin.Pinyin;
 import org.nlpcn.commons.lang.tire.domain.SmartForest;
 
 import java.io.BufferedInputStream;
@@ -78,7 +79,7 @@ public class Monitor implements Runnable {
                 .setConnectTimeout(10 * 1000).setSocketTimeout(15 * 1000).build();
 
         HttpHead head = new HttpHead(location);
-        logger.info(">>>>>> 拼装head {}" , head);
+        logger.info(">>>>>> 拼装head {}", head);
         head.setConfig(rc);
 
         //设置请求头
@@ -98,8 +99,12 @@ public class Monitor implements Runnable {
             //返回200 才做操作
             if (response.getStatusLine().getStatusCode() == 200) {
 
+                logger.info("last_modified is {}", response.getLastHeader("Last-Modified").getValue());
+                logger.info("eTags is {}", response.getLastHeader("ETag").getValue());
+
                 if (((response.getLastHeader("Last-Modified") != null) && !response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified))
                         || ((response.getLastHeader("ETag") != null) && !response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags))) {
+
 
                     // 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
                     loadPolyphoneMapping();
@@ -111,11 +116,11 @@ public class Monitor implements Runnable {
                 //没有修改，不做操作
                 //noop
             } else {
-                logger.info("info-remote_ext_dict {} return bad code {}" , location , response.getStatusLine().getStatusCode() );
+                logger.info("info-remote_ext_dict {} return bad code {}", location, response.getStatusLine().getStatusCode());
             }
 
         } catch (Exception e) {
-            logger.error("error-remote_ext_dict {} error!", e , location);
+            logger.error("error-remote_ext_dict {} error!", e, location);
         } finally {
             try {
                 if (response != null) {
@@ -139,7 +144,8 @@ public class Monitor implements Runnable {
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(new BufferedInputStream(url.openStream()), StandardCharsets.UTF_8));
 
-            polyphoneDict = new SmartForest<String[]>();
+            polyphoneDict = new SmartForest<>();
+
 
             String line;
             while (null != (line = in.readLine())) {
@@ -147,6 +153,7 @@ public class Monitor implements Runnable {
                 if ((line.length() == 0) || line.startsWith(SHARP)) {
                     continue;
                 }
+                logger.info(">>>>>>line is {}", line);
                 String[] pair = line.split(EQUAL);
 
                 if (pair.length < 2) {
@@ -154,7 +161,9 @@ public class Monitor implements Runnable {
                 }
                 maxLen = maxLen < pair[0].length() ? pair[0].length() : maxLen;
 
-                polyphoneDict.add(pair[0], pair[1].split(SPACE));
+                // polyphoneDict.add(pair[0], pair[1].split(SPACE));
+
+                Pinyin.insertPinyin(pair[0], pair[1].split(SPACE));
 
             }
 
@@ -166,6 +175,7 @@ public class Monitor implements Runnable {
         }
 
     }
+
 
 }
 
