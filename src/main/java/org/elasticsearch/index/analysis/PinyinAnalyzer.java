@@ -17,7 +17,6 @@ public final class PinyinAnalyzer extends Analyzer {
 
     public PinyinAnalyzer(PinyinConfig config) {
         this.config=config;
-        // MonitorTask.initial();   //启动有效，每次会启动5次线程
     }
 
     @Override

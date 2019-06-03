@@ -5,6 +5,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.logging.log4j.Logger;
 import org.elasticsearch.SpecialPermission;
 import org.nlpcn.commons.lang.pinyin.Pinyin;
 import org.nlpcn.commons.lang.tire.domain.SmartForest;
@@ -17,10 +18,11 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Date;
 
 public class Monitor implements Runnable {
 
-    private static final org.apache.logging.log4j.Logger logger = ESPluginLoggerFactory.getLogger(Monitor.class.getName());
+    private static final Logger logger = ESPluginLoggerFactory.getLogger(Monitor.class.getName());
 
     private static CloseableHttpClient httpclient = HttpClients.createDefault();
 
@@ -79,7 +81,7 @@ public class Monitor implements Runnable {
                 .setConnectTimeout(10 * 1000).setSocketTimeout(15 * 1000).build();
 
         HttpHead head = new HttpHead(location);
-        logger.info(">>>>>> 拼装head {}", head);
+        // logger.info(">>>>>> 拼装head {}", head);
         head.setConfig(rc);
 
         //设置请求头
@@ -99,8 +101,8 @@ public class Monitor implements Runnable {
             //返回200 才做操作
             if (response.getStatusLine().getStatusCode() == 200) {
 
-                logger.info("last_modified is {}", response.getLastHeader("Last-Modified").getValue());
-                logger.info("eTags is {}", response.getLastHeader("ETag").getValue());
+                // logger.info("last_modified is {}", response.getLastHeader("Last-Modified").getValue());
+                // logger.info("eTags is {}", response.getLastHeader("ETag").getValue());
 
                 if (((response.getLastHeader("Last-Modified") != null) && !response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified))
                         || ((response.getLastHeader("ETag") != null) && !response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags))) {
@@ -146,14 +148,13 @@ public class Monitor implements Runnable {
 
             polyphoneDict = new SmartForest<>();
 
-
+            logger.info("开始计时，当前时间为：{}" , new Date());
             String line;
             while (null != (line = in.readLine())) {
                 // line = line.trim();
                 if ((line.length() == 0) || line.startsWith(SHARP)) {
                     continue;
                 }
-                logger.info(">>>>>>line is {}", line);
                 String[] pair = line.split(EQUAL);
 
                 if (pair.length < 2) {
@@ -161,13 +162,13 @@ public class Monitor implements Runnable {
                 }
                 maxLen = maxLen < pair[0].length() ? pair[0].length() : maxLen;
 
-                // polyphoneDict.add(pair[0], pair[1].split(SPACE));
-
+                //动态增加到拼音词典中
+                //todo 目前是
                 Pinyin.insertPinyin(pair[0], pair[1].split(SPACE));
-
             }
 
             in.close();
+            logger.info("结束计时，当前时间为：{}" , new Date());
             logger.info("重新加载词典完毕...");
 
         } catch (IOException e) {
