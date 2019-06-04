@@ -107,7 +107,7 @@ public class Monitor implements Runnable {
                 if (((response.getLastHeader("Last-Modified") != null) && !response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified))
                         || ((response.getLastHeader("ETag") != null) && !response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags))) {
 
-
+                    logger.info("远程词库有更新,需要重新加载词典!");
                     // 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
                     loadPolyphoneMapping();
 
@@ -149,7 +149,14 @@ public class Monitor implements Runnable {
             polyphoneDict = new SmartForest<>();
 
             logger.info("开始计时，当前时间为：{}" , new Date());
-            String line;
+            //todo 需要跟踪内存中清理及新加载情况  2019.6.4加入
+            //清楚内存中原有的拼音及多音字字典
+            Pinyin.clearPinyin();
+            //重新载入本地拼音字典和远程文件中的多音字字典，此处都采用全量更新载入
+            Pinyin.loadPolyphoneMappingForPinyin(in);
+
+            //老代码，采用增量更新，但是维护麻烦
+            /* String line;
             while (null != (line = in.readLine())) {
                 // line = line.trim();
                 if ((line.length() == 0) || line.startsWith(SHARP)) {
@@ -163,11 +170,12 @@ public class Monitor implements Runnable {
                 maxLen = maxLen < pair[0].length() ? pair[0].length() : maxLen;
 
                 //动态增加到拼音词典中
-                //todo 目前是
-                Pinyin.insertPinyin(pair[0], pair[1].split(SPACE));
+               Pinyin.insertPinyin(pair[0], pair[1].split(SPACE));
+
             }
 
-            in.close();
+            in.close();*/
+
             logger.info("结束计时，当前时间为：{}" , new Date());
             logger.info("重新加载词典完毕...");
 
