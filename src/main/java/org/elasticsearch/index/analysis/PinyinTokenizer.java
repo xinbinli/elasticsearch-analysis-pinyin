@@ -18,6 +18,8 @@ import java.util.List;
 public class PinyinTokenizer extends Tokenizer {
 
 
+    MonitorTask monitorTask = new MonitorTask();
+
     private static final int DEFAULT_BUFFER_SIZE = 256;
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
     private boolean done = false;
@@ -46,7 +48,7 @@ public class PinyinTokenizer extends Tokenizer {
         this.config = config;
 
         //启动有效，每次启动只会启动一次线程
-        MonitorTask.initial();
+        // MonitorTask.initial();
 
         //validate config
         if (!(config.keepFirstLetter || config.keepSeparateFirstLetter || config.keepFullPinyin || config.keepJoinedFullPinyin)) {

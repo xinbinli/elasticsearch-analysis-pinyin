@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
  * @author lixinbin
  * @create 2019-05-28 13:42
  **/
-
 public class MonitorTask {
 
     private static final Logger logger = ESPluginLoggerFactory.getLogger(Monitor.class.getName());
@@ -24,7 +23,7 @@ public class MonitorTask {
     //System.getProperty("user.dir")得到的是到ES的项目地址，location.txt是放在/plugins/pinyin目录下
     private static final String fileName = "/plugins/pinyin/location.txt";
 
-    public static synchronized void initial() {
+    static {
         //读取jar包同目录下txt文件中的远程文件地址
         File file = new File(System.getProperty("user.dir") + fileName);
         String location = null;

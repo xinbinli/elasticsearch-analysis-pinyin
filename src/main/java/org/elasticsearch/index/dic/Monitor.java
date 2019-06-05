@@ -20,6 +20,11 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Date;
 
+/**
+* @Description:    监控远程文件变动线程
+* @Author:         lxb
+* @CreateDate:     2019-05-28 14:22
+*/
 public class Monitor implements Runnable {
 
     private static final Logger logger = ESPluginLoggerFactory.getLogger(Monitor.class.getName());
@@ -57,7 +62,7 @@ public class Monitor implements Runnable {
     }
 
     public void run() {
-        logger.info(">>>>>>监控文件请求线程启动！");
+        logger.info("监控文件请求线程启动！");
         SpecialPermission.check();
         AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
             this.runUnprivileged();
@@ -67,7 +72,7 @@ public class Monitor implements Runnable {
 
     /**
      * 监控流程：
-     * ①向词库服务器发送Head请求
+     * ①向多音字字典存放服务器发送Head请求
      * ②从响应中获取Last-Modify、ETags字段值，判断是否变化
      * ③如果未变化，休眠1min，返回第①步
      * ④如果有变化，重新加载词典
@@ -96,7 +101,7 @@ public class Monitor implements Runnable {
         try {
 
             response = httpclient.execute(head);
-            logger.info(">>>>>> 监控文件返回，response = " + response.toString());
+            logger.info("监控文件返回，response = " + response.toString());
 
             //返回200 才做操作
             if (response.getStatusLine().getStatusCode() == 200) {
@@ -107,7 +112,7 @@ public class Monitor implements Runnable {
                 if (((response.getLastHeader("Last-Modified") != null) && !response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified))
                         || ((response.getLastHeader("ETag") != null) && !response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags))) {
 
-                    logger.info("远程词库有更新,需要重新加载词典!");
+                    logger.info("远程词典有更新,需要重新加载词典!");
                     // 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
                     loadPolyphoneMapping();
 
@@ -117,6 +122,7 @@ public class Monitor implements Runnable {
             } else if (response.getStatusLine().getStatusCode() == 304) {
                 //没有修改，不做操作
                 //noop
+                logger.info("远程词典没有改动，不执行热加载！");
             } else {
                 logger.info("info-remote_ext_dict {} return bad code {}", location, response.getStatusLine().getStatusCode());
             }
@@ -140,7 +146,7 @@ public class Monitor implements Runnable {
     public void loadPolyphoneMapping() {
 
         try {
-            logger.info("重新加载词典...");
+            logger.info("重新加载词典中");
             URL url = new URL(location);
 
             BufferedReader in = new BufferedReader(
@@ -148,7 +154,7 @@ public class Monitor implements Runnable {
 
             polyphoneDict = new SmartForest<>();
 
-            logger.info("开始计时，当前时间为：{}" , new Date());
+            // logger.info("开始计时，当前时间为：{}" , new Date());
             //todo 需要跟踪内存中清理及新加载情况  2019.6.4加入
             //清楚内存中原有的拼音及多音字字典
             Pinyin.clearPinyin();
@@ -176,8 +182,8 @@ public class Monitor implements Runnable {
 
             in.close();*/
 
-            logger.info("结束计时，当前时间为：{}" , new Date());
-            logger.info("重新加载词典完毕...");
+            // logger.info("结束计时，当前时间为：{}" , new Date());
+            logger.info("重新加载词典完毕！");
 
         } catch (IOException e) {
             e.printStackTrace();
