@@ -17,9 +17,8 @@ import java.util.List;
 
 public class PinyinTokenizer extends Tokenizer {
 
-
+    //由于ES在加载Pinyin插件时没有加载MonitorTask类，所以在这里手动启动MonitorTask中的静态代码块，以启动监控线程，监控远程文件改变
     MonitorTask monitorTask = new MonitorTask();
-
     private static final int DEFAULT_BUFFER_SIZE = 256;
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
     private boolean done = false;
@@ -46,9 +45,6 @@ public class PinyinTokenizer extends Tokenizer {
     public PinyinTokenizer(PinyinConfig config) {
         this(DEFAULT_BUFFER_SIZE);
         this.config = config;
-
-        //启动有效，每次启动只会启动一次线程
-        // MonitorTask.initial();
 
         //validate config
         if (!(config.keepFirstLetter || config.keepSeparateFirstLetter || config.keepFullPinyin || config.keepJoinedFullPinyin)) {

@@ -146,7 +146,7 @@ public class Monitor implements Runnable {
     public void loadPolyphoneMapping() {
 
         try {
-            logger.info("重新加载词典中");
+            logger.info("重新加载词典中...");
             URL url = new URL(location);
 
             BufferedReader in = new BufferedReader(
